@@ -1,4 +1,4 @@
-module premier-league-cli
+module github.com/digitalghost-dev/premier-league-cli
 
 go 1.21
 
