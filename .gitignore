@@ -1,5 +1,6 @@
 .idea/
 *.csv
+**.DS_store
 
 # Binaries for programs and plugins
 *.exe
