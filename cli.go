@@ -23,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	if *standingsFlag || *shortStandingsFlag {
-		standings()
+		cmd.GetStandings("standings.csv")
 	} else if *deleteFlag || *shortDeleteFlag {
 		cmd.DeleteFile("standings.csv")
 	} else {
