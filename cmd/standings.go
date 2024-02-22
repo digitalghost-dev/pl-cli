@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -10,20 +10,18 @@ import (
 
 var ctx = context.Background()
 
-func standings() {
+func GetStandings(fileName string) {
 	fmt.Println("Printing standings...")
 
-	csvFilePath := "standings.csv"
-
 	// Open the CSV file
-	file, err := os.Open(csvFilePath)
+	file, err := os.Open(fileName)
 	if err != nil {
 		panic(err)
 	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			// Handle error if needed
+			fmt.Errorf("error closing file: %w", err)
 		}
 	}(file)
 
