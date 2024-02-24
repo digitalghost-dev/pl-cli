@@ -8,8 +8,7 @@ import (
 func DeleteFile(fileName string) error {
 	// Check if the file exists
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		fmt.Printf("File %s does not exist\n", fileName)
-		return nil
+		return fmt.Errorf("File %s does not exist\n", fileName)
 	}
 
 	// Attempt to remove the file
