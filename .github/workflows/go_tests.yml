@@ -1,13 +1,15 @@
-name: Go Test
+name: Go Tests
 
 on:
   push:
     branches: ["main"]
   pull_request:
     types: [opened, reopened]
+
 jobs:
-  runs-on: ubuntu-22.04
-  steps:
+  tests:
+    runs-on: ubuntu-22.04
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
 
