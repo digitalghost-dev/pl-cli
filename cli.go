@@ -23,9 +23,15 @@ func main() {
 	flag.Parse()
 
 	if *standingsFlag || *shortStandingsFlag {
-		cmd.GetStandings("standings.csv")
+		err := cmd.DisplayStandings("standings.csv")
+		if err != nil {
+			return
+		}
 	} else if *deleteFlag || *shortDeleteFlag {
-		cmd.DeleteFile("standings.csv")
+		err := cmd.DeleteFile("standings.csv")
+		if err != nil {
+			return
+		}
 	} else {
 		flag.Usage()
 	}

@@ -10,26 +10,25 @@ import (
 
 var ctx = context.Background()
 
-func GetStandings(fileName string) {
+func DisplayStandings(fileName string) error {
 	fmt.Println("Printing standings...")
 
-	// Open the CSV file
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		fmt.Println("File does not exist. Use the -u flag to download a fresh copy.")
+	}
+
 	file, err := os.Open(fileName)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error opening file: %w", err)
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Errorf("error closing file: %w", err)
-		}
-	}(file)
 
-	// Load the dataframe from the CSV file
+	defer file.Close()
+
 	df, err := imports.LoadFromCSV(ctx, file, imports.CSVLoadOptions{InferDataTypes: true})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error loading dataframe from CSV: %w", err)
 	}
 
 	fmt.Println(df.Table())
+	return nil
 }
