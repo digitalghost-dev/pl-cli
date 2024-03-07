@@ -8,9 +8,7 @@ import (
 	"github.com/rocketlaunchr/dataframe-go/imports"
 )
 
-var ctx = context.Background()
-
-func DisplayStandings(fileName string) error {
+func DisplayStandings(fileName string, ctx context.Context) error {
 	fmt.Println("Printing standings...")
 
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
