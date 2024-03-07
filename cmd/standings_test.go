@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"testing"
 )
@@ -24,7 +25,8 @@ func TestDisplayStandings(t *testing.T) {
 	}
 
 	// call the function
-	err = DisplayStandings(file.Name())
+	ctx := context.Background()
+	err = DisplayStandings(file.Name(), ctx)
 	if err != nil {
 		t.Errorf("Error displaying standings: %v", err)
 	}

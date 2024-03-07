@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"github.com/digitalghost-dev/premier-league-cli/cmd"
+	"github.com/digitalghost-dev/pl-cli/cmd"
 )
 
 func main() {
@@ -26,7 +27,8 @@ func main() {
 	flag.Parse()
 
 	if *standingsFlag || *shortStandingsFlag {
-		err := cmd.DisplayStandings("standings.csv")
+		ctx := context.Background()
+		err := cmd.DisplayStandings("standings.csv", ctx)
 		if err != nil {
 			return
 		}
