@@ -1,48 +1,39 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/digitalghost-dev/pl-cli/cmd"
 )
 
 func main() {
-	standingsFlag := flag.Bool("standings", false, "Prints current standings")
-	shortStandingsFlag := flag.Bool("s", false, "Prints current standings")
-
-	deleteFlag := flag.Bool("delete", false, "Deletes standings.csv file")
-	shortDeleteFlag := flag.Bool("d", false, "Deletes standings.csv file")
-
-	updateFlag := flag.Bool("update", false, "Updates standings.csv file")
-	shortUpdateFlag := flag.Bool("u", false, "Updates standings.csv file")
+	standings := flag.NewFlagSet("standings", flag.ExitOnError)
 
 	flag.Usage = func() {
-		fmt.Println("Welcome. This tool simply prints the current standings of the English Premier League.")
-		fmt.Println("Options:")
-		fmt.Printf("    %-25s%s\n", "-d, --delete", "Deletes standings.csv file")
-		fmt.Printf("    %-25s%s\n", "-s, --standings", "Prints current standings")
+		fmt.Println("Welcome! This tool simply prints the current standings of the English Premier League.")
+
+		fmt.Print("\n")
+		fmt.Println("Usage:")
+		fmt.Println("  pl-cli [command]")
+
+		fmt.Print("\n")
+		fmt.Println("Available Commands:")
+		fmt.Printf("    %-25s%s\n", "standings", "Renders the current standings of the English Premier League.")
+		fmt.Print("\n")
 	}
 
 	flag.Parse()
 
-	if *standingsFlag || *shortStandingsFlag {
-		ctx := context.Background()
-		err := cmd.DisplayStandings("standings.csv", ctx)
-		if err != nil {
-			return
+	if os.Args[1] == "standings" {
+		if err := standings.Parse(os.Args); err != nil {
+			fmt.Printf("error parsing standings: %v\n", err)
 		}
-	} else if *deleteFlag || *shortDeleteFlag {
-		err := cmd.DeleteFile("standings.csv")
-		if err != nil {
-			return
+
+		if err := cmd.DisplayStandings("https://storage.googleapis.com/premier_league_bucket/standings.csv"); err != nil {
+			fmt.Printf("error displaying standings: %v", err)
 		}
-	} else if *updateFlag || *shortUpdateFlag {
-		err := cmd.UpdateFile("standings.csv", "https://storage.googleapis.com/premier_league_bucket/standings.csv")
-		if err != nil {
-			return
-		}
-	} else {
-		flag.Usage()
 	}
+
 }
