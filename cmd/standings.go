@@ -1,32 +1,121 @@
 package cmd
 
 import (
-	"context"
+	"encoding/csv"
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
+	"log"
+	"net/http"
 	"os"
-
-	"github.com/rocketlaunchr/dataframe-go/imports"
 )
 
-func DisplayStandings(fileName string, ctx context.Context) error {
-	fmt.Println("Printing standings...")
+const (
+	purple = lipgloss.Color("#38003C")
+	green  = lipgloss.Color("#05F26C")
+	blue   = lipgloss.Color("#07F2F2")
+	red    = lipgloss.Color("#F2055C")
+)
 
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		fmt.Println("File does not exist. Use the -u flag to download a fresh copy.")
-	}
+var colorSwitch = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#CCCCCC"}
 
-	file, err := os.Open(fileName)
+func DisplayStandings(url string) error {
+
+	// Perform HTTP GET request to fetch the CSV file
+	response, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("error opening file: %w", err)
+		log.Fatalf("failed to fetch CSV file: %v", err)
 	}
+	defer response.Body.Close()
 
-	defer file.Close()
-
-	df, err := imports.LoadFromCSV(ctx, file, imports.CSVLoadOptions{InferDataTypes: true})
+	// Parse the CSV file
+	reader := csv.NewReader(response.Body)
+	records, err := reader.ReadAll()
 	if err != nil {
-		return fmt.Errorf("error loading dataframe from CSV: %w", err)
+		log.Fatalf("failed to parse CSV: %v", err)
 	}
 
-	fmt.Println(df.Table())
+	records = records[1:]
+
+	re := lipgloss.NewRenderer(os.Stdout)
+
+	headerStyle := re.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
+	BorderStyle := lipgloss.NewStyle().Foreground(purple)
+	positionColors := map[string]lipgloss.Style{
+		"championsLeague": lipgloss.NewStyle().Foreground(lipgloss.Color(green)),
+		"europaLeague":    lipgloss.NewStyle().Foreground(lipgloss.Color(blue)),
+		"relegation":      lipgloss.NewStyle().Foreground(lipgloss.Color(red)),
+	}
+
+	t := table.New().
+		Border(lipgloss.ThickBorder()).
+		BorderStyle(BorderStyle).
+		Headers(headerStyle.String()).
+		StyleFunc(func(row, col int) lipgloss.Style {
+			var style lipgloss.Style
+
+			if row == 0 {
+				style = headerStyle
+			} else if row <= 4 {
+				style = positionColors["championsLeague"]
+			} else if row == 5 {
+				style = positionColors["europaLeague"]
+			} else if row >= 18 {
+				style = positionColors["relegation"]
+			} else {
+				style = lipgloss.NewStyle().Foreground(colorSwitch)
+			}
+
+			// Rank
+			if col == 0 {
+				style = style.Copy().Width(7).Align(lipgloss.Center)
+			}
+
+			// Team
+			if col == 1 {
+				style = style.Copy().Width(20)
+			}
+
+			// Games Played
+			if col == 2 {
+				style = style.Copy().Width(7).Align(lipgloss.Center)
+			}
+
+			// Wins
+			if col == 3 {
+				style = style.Copy().Width(6).Align(lipgloss.Center)
+			}
+
+			// Draws
+			if col == 4 {
+				style = style.Copy().Width(7).Align(lipgloss.Center)
+			}
+
+			// Loses
+			if col == 5 {
+				style = style.Copy().Width(7).Align(lipgloss.Center)
+			}
+
+			// Recent Form
+			if col == 6 {
+				style = style.Copy().Width(12).Align(lipgloss.Center)
+			}
+
+			// Points
+			if col == 7 {
+				style = style.Copy().Width(8).Align(lipgloss.Center)
+			}
+
+			// Goals For, Against, Difference
+			if col >= 8 {
+				style = style.Copy().Width(5).Align(lipgloss.Center)
+			}
+
+			return style
+		}).
+		Headers("RANK", "TEAM", "GP", "WINS", "DRAWS", "LOSES", "RECENT FORM", "POINTS", "GF", "GA", "GD").
+		Rows(records...)
+
+	fmt.Println(t)
 	return nil
 }
