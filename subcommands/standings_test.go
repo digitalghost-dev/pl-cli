@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os/exec"
 	"testing"
 )
 
@@ -26,4 +27,9 @@ func TestDisplayStandings(t *testing.T) {
 		t.Errorf("error reaching bucket: %v", err)
 	}
 
+	cmd := exec.Command("go", "run", "../cli.go", "standings")
+	err = cmd.Run()
+	if err != nil {
+		t.Errorf("error running command: %v", err)
+	}
 }
