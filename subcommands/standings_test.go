@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"testing"
 	"os/exec"
+	"testing"
 )
 
 func TestDisplayStandings(t *testing.T) {
