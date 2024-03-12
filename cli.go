@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/digitalghost-dev/pl-cli/cmd"
+	"github.com/digitalghost-dev/pl-cli/subcommands"
 )
 
 func main() {
+	// Standings subcommand
 	standings := flag.NewFlagSet("standings", flag.ExitOnError)
 
 	flag.Usage = func() {
@@ -16,15 +17,21 @@ func main() {
 
 		fmt.Print("\n")
 		fmt.Println("Usage:")
-		fmt.Println("  pl-cli [command]")
+		fmt.Println("  pl-cli [subcommand]")
 
 		fmt.Print("\n")
 		fmt.Println("Available Commands:")
-		fmt.Printf("    %-25s%s\n", "standings", "Renders the current standings of the English Premier League.")
+		fmt.Println("\t", "standings:", "\t", "Renders the current standings of the English Premier League.")
 		fmt.Print("\n")
 	}
 
 	flag.Parse()
+
+	if len(os.Args) > 2 {
+		flag.Usage()
+		fmt.Println("Error: Too many arguments.")
+		os.Exit(1)
+	}
 
 	if os.Args[1] == "standings" {
 		if err := standings.Parse(os.Args); err != nil {
