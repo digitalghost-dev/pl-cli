@@ -12,12 +12,29 @@ func main() {
 	// Standings subcommand
 	standings := flag.NewFlagSet("standings", flag.ExitOnError)
 
-	flag.Usage = func() {
-		fmt.Println("Welcome! This tool simply prints the current standings of the English Premier League.")
+	championsFlag := standings.Bool("champions", false, "Shows teams currently promoted to the Champions League.")
+	shortChampionsFlag := standings.Bool("c", false, "Shows teams currently promoted to the Champions League.")
+
+	standings.Usage = func() {
+		fmt.Println("Displays the current standings for the league.")
 
 		fmt.Print("\n")
 		fmt.Println("Usage:")
-		fmt.Println("  pl-cli [subcommand]")
+		fmt.Println("  pl-cli standings [flag]")
+
+		fmt.Print("\n")
+		fmt.Println("Available Flags:")
+		fmt.Println("\t", "-c, --champions", "\t", "Shows teams currently promoted to the Champions League.")
+		fmt.Print("\n")
+	}
+
+	flag.Usage = func() {
+		fmt.Println("Welcome! This tool displays statistics and data for English Premier League in the terminal.")
+		fmt.Println("Data is currently updated every day at 6:00 PST.")
+
+		fmt.Print("\n")
+		fmt.Println("Usage:")
+		fmt.Println("  pl-cli [subcommand] [flag]")
 
 		fmt.Print("\n")
 		fmt.Println("Available Commands:")
@@ -27,20 +44,41 @@ func main() {
 
 	flag.Parse()
 
-	if len(os.Args) > 2 {
+	if len(os.Args) > 3 {
 		flag.Usage()
-		fmt.Println("Error: Too many arguments.")
+		fmt.Println("Too many arguments")
 		os.Exit(1)
 	}
 
+	// Standings subcommand
 	if os.Args[1] == "standings" {
-		if err := standings.Parse(os.Args); err != nil {
-			fmt.Printf("error parsing standings: %v\n", err)
+		err := standings.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Printf("error parsing flags: %v", err)
 		}
 
-		if err := cmd.DisplayStandings("https://storage.googleapis.com/premier_league_bucket/standings.csv"); err != nil {
+		if *championsFlag || *shortChampionsFlag {
+			records, err := subcommands.FetchAndParseCSV("https://storage.googleapis.com/premier_league_bucket/standings.csv")
+			if err != nil {
+				fmt.Printf("error fetching CSV: %v", err)
+				return
+			}
+
+			if err := subcommands.ChampionsFlag(records); err != nil {
+				fmt.Printf("error processing champions: %v", err)
+				return
+			}
+			return
+		}
+
+		records, err := subcommands.FetchAndParseCSV("https://storage.googleapis.com/premier_league_bucket/standings.csv")
+		if err != nil {
+			fmt.Printf("error fetching CSV: %v", err)
+			return
+		}
+
+		if err := subcommands.SubcommandStandings(records); err != nil {
 			fmt.Printf("error displaying standings: %v", err)
 		}
 	}
-
 }
