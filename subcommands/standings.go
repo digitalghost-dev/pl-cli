@@ -1,11 +1,11 @@
-package cmd
+package subcommands
 
 import (
 	"encoding/csv"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"log"
+	"io"
 	"net/http"
 	"os"
 )
@@ -19,27 +19,36 @@ const (
 
 var colorSwitch = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#CCCCCC"}
 
-func DisplayStandings(url string) error {
-
+func FetchAndParseCSV(url string) ([][]string, error) {
 	// Perform HTTP GET request to fetch the CSV file
 	response, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("failed to fetch CSV file: %v", err)
+		return nil, fmt.Errorf("failed to fetch CSV file: %v", err)
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("failed to close response body: %v", err)
+		}
+	}(response.Body)
 
 	// Parse the CSV file
 	reader := csv.NewReader(response.Body)
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Fatalf("failed to parse CSV: %v", err)
+		return nil, fmt.Errorf("failed to parse CSV: %v", err)
 	}
+
+	return records, nil
+}
+
+func SubcommandStandings(records [][]string) error {
 
 	records = records[1:]
 
 	re := lipgloss.NewRenderer(os.Stdout)
 
-	headerStyle := re.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
+	headerStyle := re.NewStyle().Foreground(colorSwitch).Bold(true).Align(lipgloss.Center)
 	BorderStyle := lipgloss.NewStyle().Foreground(purple)
 	positionColors := map[string]lipgloss.Style{
 		"championsLeague": lipgloss.NewStyle().Foreground(lipgloss.Color(green)),
@@ -81,19 +90,9 @@ func DisplayStandings(url string) error {
 				style = style.Copy().Width(7).Align(lipgloss.Center)
 			}
 
-			// Wins
-			if col == 3 {
+			// Wins, Draws, Loses
+			if col >= 3 && col <= 5 {
 				style = style.Copy().Width(6).Align(lipgloss.Center)
-			}
-
-			// Draws
-			if col == 4 {
-				style = style.Copy().Width(7).Align(lipgloss.Center)
-			}
-
-			// Loses
-			if col == 5 {
-				style = style.Copy().Width(7).Align(lipgloss.Center)
 			}
 
 			// Recent Form
@@ -115,6 +114,46 @@ func DisplayStandings(url string) error {
 		}).
 		Headers("RANK", "TEAM", "GP", "WINS", "DRAWS", "LOSES", "RECENT FORM", "POINTS", "GF", "GA", "GD").
 		Rows(records...)
+
+	fmt.Println(t)
+	return nil
+}
+
+func ChampionsFlag(records [][]string) error {
+	fmt.Println("Teams currently qualified for the Champions League")
+
+	championsRecords := records[1:5]
+	testSlices := make([][]string, 0, 4)
+
+	for position := 0; position < 4; position++ {
+		soloSlice := []string{championsRecords[position][1], championsRecords[position][7]}
+		testSlices = append(testSlices, soloSlice)
+	}
+
+	re := lipgloss.NewRenderer(os.Stdout)
+
+	headerStyle := re.NewStyle().Foreground(colorSwitch).Bold(true).Align(lipgloss.Center)
+	BorderStyle := lipgloss.NewStyle().Foreground(green)
+
+	t := table.New().
+		Border(lipgloss.ThickBorder()).
+		BorderStyle(BorderStyle).
+		Headers(headerStyle.String()).
+		StyleFunc(func(row, col int) lipgloss.Style {
+			var style lipgloss.Style
+			// Team
+			if col == 0 {
+				style = style.Copy().Width(20)
+			}
+
+			// Points
+			if col == 1 {
+				style = style.Copy().Width(8).Align(lipgloss.Center)
+			}
+			return style
+		}).
+		Headers("TEAM", "POINTS").
+		Rows(testSlices...)
 
 	fmt.Println(t)
 	return nil
