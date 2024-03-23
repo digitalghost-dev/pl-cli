@@ -1,35 +1,40 @@
-package cmd
+package subcommands
 
 import (
-	"fmt"
-	"net/http"
-	"os/exec"
 	"testing"
 )
 
-func TestDisplayStandings(t *testing.T) {
+func TestFetchAndParseCSV(t *testing.T) {
 	url := "https://storage.googleapis.com/premier_league_bucket/standings.csv"
+	if _, err := FetchAndParseCSV(url); err != nil {
+		t.Errorf("failed to fetch and parse CSV: %v", err)
+	}
+}
 
-	response, err := http.Get(url)
+func TestSubcommandStandings(t *testing.T) {
+	url := "https://storage.googleapis.com/premier_league_bucket/standings.csv"
+	records, err := FetchAndParseCSV(url)
 	if err != nil {
-		t.Errorf("error reaching bucket: %v", err)
+		t.Errorf("failed to fetch and parse CSV: %v", err)
 		return
 	}
 
-	defer response.Body.Close()
+	err = SubcommandStandings(records)
+	if err != nil {
+		t.Errorf("failed to generate standings: %v", err)
+	}
+}
 
-	switch response.StatusCode {
-	case http.StatusOK:
-		fmt.Println("Connection to bucket successful")
-	case http.StatusNotFound:
-		fmt.Println("404 - Not Found")
-	default:
-		t.Errorf("error reaching bucket: %v", err)
+func TestChampionsFlag(t *testing.T) {
+	url := "https://storage.googleapis.com/premier_league_bucket/standings.csv"
+	records, err := FetchAndParseCSV(url)
+	if err != nil {
+		t.Errorf("failed to fetch and parse CSV: %v", err)
+		return
 	}
 
-	cmd := exec.Command("go", "run", "../cli.go", "standings")
-	err = cmd.Run()
+	err = ChampionsFlag(records)
 	if err != nil {
-		t.Errorf("error running command: %v", err)
+		t.Errorf("failed to identify ChampionsFlag teams: %v", err)
 	}
 }
