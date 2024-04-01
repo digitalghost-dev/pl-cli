@@ -5,14 +5,12 @@
 <div align="center">
     <h1>Premier League CLI</h1>
     <img src="https://img.shields.io/github/v/release/digitalghost-dev/premier-league-cli?style=flat-square&logo=git&logoColor=38003C&label=Release%20Version&labelColor=EEE&color=38003C" alt="version-label">
-    <img src="https://img.shields.io/github/actions/workflow/status/digitalghost-dev/premier-league-cli/go_tests.yml?style=flat-square&logo=go&logoColor=00ADD8&label=Tests&labelColor=EEE&color=00ADD8" alt="tests-label">
-    <img src="https://img.shields.io/github/go-mod/go-version/digitalghost-dev/premier-league-cli?style=flat-square&logo=Go&labelColor=EEE&color=00ADD8" alt="go-version">
+    <img src="https://img.shields.io/docker/image-size/digitalghostdev/pl-cli/v0.4.2?arch=arm64&style=flat-square&logo=docker&logoColor=38003C&labelColor=EEE&color=38003C" alt="docker-image-size">
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/docker/image-size/digitalghostdev/pl-cli/v0.4.2?arch=arm64&style=flat-square&logo=docker&logoColor=38003C&labelColor=FFF&color=38003C" alt="docker-image-size">
-    <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=flat-square&logo=googlecloud&labelColor=FFF
-" alt="google-cloud-label">
+    <img src="https://img.shields.io/github/actions/workflow/status/digitalghost-dev/premier-league-cli/go_tests.yml?style=flat-square&logo=go&logoColor=00ADD8&label=Tests&labelColor=EEE&color=00ADD8" alt="tests-label">
+    <img src="https://img.shields.io/github/go-mod/go-version/digitalghost-dev/premier-league-cli?style=flat-square&logo=Go&labelColor=EEE&color=00ADD8" alt="go-version">
 </div>
 
 ## Overview
