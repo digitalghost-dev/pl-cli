@@ -41,7 +41,7 @@ Available Commands:
 
 ### Docker
 ```bash
-docker run --rm -it digitalghostdev/pl-cli:v0.4.2
+docker run --rm -it digitalghostdev/pl-cli:v0.4.2 [command] [flag]
 ```
 
 ## Examples
