@@ -51,9 +51,9 @@ func SubcommandStandings(records [][]string) error {
 	headerStyle := re.NewStyle().Foreground(colorSwitch).Bold(true).Align(lipgloss.Center)
 	BorderStyle := lipgloss.NewStyle().Foreground(purple)
 	positionColors := map[string]lipgloss.Style{
-		"championsLeague": lipgloss.NewStyle().Foreground(lipgloss.Color(green)),
-		"europaLeague":    lipgloss.NewStyle().Foreground(lipgloss.Color(blue)),
-		"relegation":      lipgloss.NewStyle().Foreground(lipgloss.Color(red)),
+		"championsLeague": lipgloss.NewStyle().Foreground(green),
+		"europaLeague":    lipgloss.NewStyle().Foreground(blue),
+		"relegation":      lipgloss.NewStyle().Foreground(red),
 	}
 
 	t := table.New().
