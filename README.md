@@ -22,6 +22,7 @@ This project is an addition to a data engineering project that I've been working
 
 ## Infrastructure
 Using Cloud Scheduler, a Cloud Function is ran on a schedule that exports data from BigQuery to Cloud Storage daily at 6AM PST.
+
 ![data-pipeline-flowchart](https://storage.googleapis.com/premier_league_bucket/premier_league_cli/cloud_functions_pipeline.png)
 
 ## Usage
