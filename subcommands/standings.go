@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const (
@@ -18,6 +19,53 @@ const (
 )
 
 var colorSwitch = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#CCCCCC"}
+var styleUnderline = lipgloss.NewStyle().Underline(true)
+var styleBold = lipgloss.NewStyle().Bold(true)
+var errorColor = lipgloss.NewStyle().Foreground(red)
+
+func StandingsCommand() {
+	standings, championsFlag, shortChampionsFlag := SetupStandingsFlagSet()
+
+	if os.Args[1] == "standings" {
+		// Parse flags
+		err := standings.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Printf("error parsing flags: %v", err)
+			os.Exit(1)
+		}
+
+		// Check if there are any non-flag arguments
+		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+			fmt.Println(errorColor.Render("error: only flags are allowed after the standings subcommand\n"))
+			os.Exit(1)
+		}
+
+		// If no flags are provided, create normal standings table
+		if !*championsFlag && !*shortChampionsFlag {
+			records, _ := FetchAndParseCSV("https://storage.googleapis.com/premier_league_bucket/standings.csv")
+			err := CreateTable(records)
+			if err != nil {
+				return
+			}
+			return
+		}
+
+		// If championsFlag or shortChampionsFlag is provided, process accordingly
+		records, err := FetchAndParseCSV("https://storage.googleapis.com/premier_league_bucket/standings.csv")
+		if err != nil {
+			fmt.Printf("error fetching CSV: %v", err)
+			os.Exit(1)
+		}
+
+		if *championsFlag || *shortChampionsFlag {
+			if err := ChampionsFlag(records); err != nil {
+				fmt.Printf("error processing champions: %v", err)
+				os.Exit(1)
+			}
+			return
+		}
+	}
+}
 
 func FetchAndParseCSV(url string) ([][]string, error) {
 	// Perform HTTP GET request to fetch the CSV file
@@ -42,7 +90,7 @@ func FetchAndParseCSV(url string) ([][]string, error) {
 	return records, nil
 }
 
-func SubcommandStandings(records [][]string) error {
+func CreateTable(records [][]string) error {
 
 	records = records[1:]
 
@@ -114,46 +162,6 @@ func SubcommandStandings(records [][]string) error {
 		}).
 		Headers("RANK", "TEAM", "GP", "WINS", "DRAWS", "LOSES", "RECENT FORM", "POINTS", "GF", "GA", "GD").
 		Rows(records...)
-
-	fmt.Println(t)
-	return nil
-}
-
-func ChampionsFlag(records [][]string) error {
-	fmt.Println("Teams currently qualified for the Champions League")
-
-	championsRecords := records[1:5]
-	testSlices := make([][]string, 0, 4)
-
-	for position := 0; position < 4; position++ {
-		soloSlice := []string{championsRecords[position][1], championsRecords[position][7]}
-		testSlices = append(testSlices, soloSlice)
-	}
-
-	re := lipgloss.NewRenderer(os.Stdout)
-
-	headerStyle := re.NewStyle().Foreground(colorSwitch).Bold(true).Align(lipgloss.Center)
-	BorderStyle := lipgloss.NewStyle().Foreground(green)
-
-	t := table.New().
-		Border(lipgloss.ThickBorder()).
-		BorderStyle(BorderStyle).
-		Headers(headerStyle.String()).
-		StyleFunc(func(row, col int) lipgloss.Style {
-			var style lipgloss.Style
-			// Team
-			if col == 0 {
-				style = style.Copy().Width(20)
-			}
-
-			// Points
-			if col == 1 {
-				style = style.Copy().Width(8).Align(lipgloss.Center)
-			}
-			return style
-		}).
-		Headers("TEAM", "POINTS").
-		Rows(testSlices...)
 
 	fmt.Println(t)
 	return nil
